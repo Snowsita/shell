@@ -24,7 +24,7 @@ func main() {
 		command := input[:len(input)-1]
 
 		if command == "exit" {
-			os.Exit(1)
+			os.Exit(0)
 		}
 
 		fmt.Println(command + ": command not found")
