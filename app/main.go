@@ -33,13 +33,14 @@ func main() {
 		command := parts[0]
 
 		switch command {
-			case "exit":
-				os.Exit(0)
-			case "echo":
-				fmt.Println(strings.Join(parts[1:], " "))
+		case "exit":
+			os.Exit(0)
+		case "echo":
+			fmt.Println(strings.Join(parts[1:], " "))
+		default:
+			fmt.Println(command + ": command not found")
 		}
 
-		fmt.Println(command + ": command not found")
 	}
 
 }
