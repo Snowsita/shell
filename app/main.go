@@ -55,7 +55,6 @@ func main() {
 					fullPath := filepath.Join(dir, target)
 
 					if _, err := os.Stat(fullPath); err == nil {
-						fmt.Printf("Checking %s\n", fullPath)
 						fmt.Printf("%s is %s\n", target, fullPath)
 						found = true
 						break
