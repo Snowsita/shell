@@ -54,15 +54,11 @@ func main() {
 				for _, dir := range paths {
 					fullPath := filepath.Join(dir, target)
 
-					info, err := os.Stat(fullPath)
-					if err == nil {
-						// We found a file!
-						// Is it a directory? 'type' should only return files.
-						if !info.IsDir() {
-							fmt.Printf("%s is %s\n", target, fullPath)
-							found = true
-							break
-						}
+					if _, err := os.Stat(fullPath); err == nil {
+						fmt.Printf("Checking %s\n", fullPath)
+						fmt.Printf("%s is %s\n", target, fullPath)
+						found = true
+						break
 					}
 				}
 
