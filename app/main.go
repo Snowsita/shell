@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -41,11 +42,27 @@ func main() {
 			if len(parts) > 1 {
 				target := parts[1]
 
-				switch target {
-				case "exit", "echo", "type":
+				if target == "exit" || target == "echo" || target == "type" {
 					fmt.Printf("%s is a shell builtin\n", target)
-				default:
-					fmt.Printf("%s not found\n", target)
+					continue
+				}
+
+				pathEnv := os.Getenv("PATH")
+				paths := strings.Split(pathEnv, ":")
+				found := false
+
+				for _, dir := range paths {
+					fullPath := filepath.Join(dir, target)
+
+					if _, err := os.Stat(fullPath); err == nil {
+						fmt.Printf("%s is %s\n", target, fullPath)
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					fmt.Printf("%s: not found\n", target)
 				}
 			}
 		default:
