@@ -37,8 +37,19 @@ func main() {
 			os.Exit(0)
 		case "echo":
 			fmt.Println(strings.Join(parts[1:], " "))
+		case "type":
+			if len(parts) > 1 {
+				target := parts[1]
+
+				switch target {
+				case "exit", "echo", "type":
+					fmt.Printf("%s is a shell builtin\n", target)
+				default:
+					fmt.Printf("%s not found\n", target)
+				}
+			}
 		default:
-			fmt.Println(command + ": command not found")
+			fmt.Printf("%s: command not found", command)
 		}
 
 	}
