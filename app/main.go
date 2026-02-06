@@ -48,16 +48,19 @@ func main() {
 				}
 
 				pathEnv := os.Getenv("PATH")
-				paths := strings.Split(pathEnv, ":")
+				paths := strings.Split(pathEnv, string(os.PathListSeparator))
 				found := false
 
 				for _, dir := range paths {
 					fullPath := filepath.Join(dir, target)
 
-					if _, err := os.Stat(fullPath); err == nil {
-						fmt.Printf("%s is %s\n", target, fullPath)
-						found = true
-						break
+					info, err := os.Stat(fullPath)
+					if err == nil {
+						if !info.IsDir() && info.Mode()&0111 != 0 {
+							fmt.Printf("%s is %s\n", target, fullPath)
+							found = true
+							break
+						}
 					}
 				}
 
