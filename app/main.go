@@ -91,6 +91,8 @@ func main() {
 			if fullPath != "" {
 				cmd := exec.Command(fullPath, args...)
 
+				cmd.Args[0] = command
+
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 
