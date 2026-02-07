@@ -59,7 +59,7 @@ func main() {
 			if len(parts) > 1 {
 				target := parts[1]
 
-				if target == "exit" || target == "echo" || target == "type" {
+				if target == "exit" || target == "echo" || target == "type" || target == "pwd" {
 					fmt.Printf("%s is a shell builtin\n", target)
 					continue
 				}
@@ -84,6 +84,13 @@ func main() {
 				if !found {
 					fmt.Printf("%s: not found\n", target)
 				}
+			}
+		case "pwd":
+			dir, err := os.Getwd()
+			if err == nil {
+				fmt.Println(dir)
+			} else {
+				fmt.Printf("%s: not found", err)
 			}
 		default:
 			fullPath := getExecutablePath(command)
