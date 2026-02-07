@@ -4,9 +4,25 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
+
+func getExecutablePath(command string) string {
+	pathEnv := os.Getenv("PATH")
+	paths := strings.Split(pathEnv, string(os.PathListSeparator))
+
+	for _, dir := range paths {
+		fullPath := filepath.Join(dir, command)
+		info, err := os.Stat(fullPath)
+		if err == nil && !info.IsDir() && info.Mode()&0111 != 0 {
+			return fullPath
+		}
+	}
+
+	return ""
+}
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
@@ -32,6 +48,7 @@ func main() {
 		}
 
 		command := parts[0]
+		args := parts[1:]
 
 		switch command {
 		case "exit":
@@ -69,7 +86,21 @@ func main() {
 				}
 			}
 		default:
-			fmt.Printf("%s: command not found\n", command)
+			fullPath := getExecutablePath(command)
+
+			if fullPath != "" {
+				cmd := exec.Command(fullPath, args...)
+
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+
+				err := cmd.Run()
+				if err != nil {
+					fmt.Printf("%s: error executing command\n", command)
+				}
+			} else {
+				fmt.Printf("%s: command not found\n", command)
+			}
 		}
 	}
 }
