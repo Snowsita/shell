@@ -25,17 +25,36 @@ func getExecutablePath(command string) string {
 }
 
 func parseInput(input string) []string {
-	var parts[]string
+	var parts []string
 	var currentPart strings.Builder
-	inQuotes := false
+	inSingleQuotes := false
+	inDoubleQuotes := false
+	isEscaped := false
 
 	for _, char := range input {
-		if char == '\'' {
-			inQuotes = !inQuotes
+
+		if isEscaped {
+			currentPart.WriteRune(char)
+			isEscaped = false
 			continue
 		}
 
-		if char == ' ' && !inQuotes {
+		if char == '\\' && !inSingleQuotes {
+			isEscaped = true
+			continue
+		}
+
+		if char == '\'' && !inDoubleQuotes == false {
+			inSingleQuotes = !inSingleQuotes
+			continue
+		}
+
+		if char == '"' && !inSingleQuotes == false {
+			inDoubleQuotes = !inDoubleQuotes
+			continue
+		}
+
+		if char == ' ' && !inSingleQuotes && !inDoubleQuotes {
 			if currentPart.Len() > 0 {
 				parts = append(parts, currentPart.String())
 				currentPart.Reset()
