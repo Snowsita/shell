@@ -10,6 +10,14 @@ import (
 )
 
 func getExecutablePath(command string) string {
+	if strings.Contains(command, string(os.PathSeparator)) {
+		info, err := os.Stat(command)
+		if err == nil && !info.IsDir() && info.Mode()&0111 != 0 {
+			return command
+		}
+		return ""
+	}
+	
 	pathEnv := os.Getenv("PATH")
 	paths := strings.Split(pathEnv, string(os.PathListSeparator))
 
