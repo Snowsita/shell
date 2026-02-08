@@ -126,7 +126,7 @@ func main() {
 
 				fullPath := getExecutablePath(target)
 				if fullPath != "" {
-					fmt.Printf("%s: is %s\n", target, fullPath)
+					fmt.Printf("%s is %s\n", target, fullPath)
 				} else {
 					fmt.Printf("%s: not found\n", target)
 				}
