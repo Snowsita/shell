@@ -24,6 +24,35 @@ func getExecutablePath(command string) string {
 	return ""
 }
 
+func parseInput(input string) []string {
+	var parts[]string
+	var currentPart strings.Builder
+	inQuotes := false
+
+	for _, char := range input {
+		if char == '\'' {
+			inQuotes = !inQuotes
+			continue
+		}
+
+		if char == ' ' && !inQuotes {
+			if currentPart.Len() > 0 {
+				parts = append(parts, currentPart.String())
+				currentPart.Reset()
+			}
+			continue
+		}
+
+		currentPart.WriteRune(char)
+	}
+
+	if currentPart.Len() > 0 {
+		parts = append(parts, currentPart.String())
+	}
+
+	return parts
+}
+
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
@@ -41,7 +70,7 @@ func main() {
 
 		input = input[:len(input)-1]
 
-		parts := strings.Fields(input)
+		parts := parseInput(input)
 
 		if len(parts) == 0 {
 			continue
