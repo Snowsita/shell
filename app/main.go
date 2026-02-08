@@ -17,7 +17,7 @@ func getExecutablePath(command string) string {
 		}
 		return ""
 	}
-	
+
 	pathEnv := os.Getenv("PATH")
 	paths := strings.Split(pathEnv, string(os.PathListSeparator))
 
@@ -42,6 +42,10 @@ func parseInput(input string) []string {
 	for _, char := range input {
 
 		if isEscaped {
+			if inDoubleQuotes && !(char == '"' || char == '\\' || char == '$' || char == '`') {
+				currentPart.WriteRune('\\')
+			}
+
 			currentPart.WriteRune(char)
 			isEscaped = false
 			continue
@@ -120,24 +124,10 @@ func main() {
 					continue
 				}
 
-				pathEnv := os.Getenv("PATH")
-				paths := strings.Split(pathEnv, string(os.PathListSeparator))
-				found := false
-
-				for _, dir := range paths {
-					fullPath := filepath.Join(dir, target)
-
-					info, err := os.Stat(fullPath)
-					if err == nil {
-						if !info.IsDir() && info.Mode()&0111 != 0 {
-							fmt.Printf("%s is %s\n", target, fullPath)
-							found = true
-							break
-						}
-					}
-				}
-
-				if !found {
+				fullPath := getExecutablePath(target)
+				if fullPath != "" {
+					fmt.Printf("%s: is %s\n", target, fullPath)
+				} else {
 					fmt.Printf("%s: not found\n", target)
 				}
 			}
