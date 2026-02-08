@@ -98,6 +98,9 @@ func main() {
 			}
 
 			target := parts[1]
+			if target == "~" {
+				target = os.Getenv("HOME")
+			}
 
 			err := os.Chdir(target)
 			if err != nil {
