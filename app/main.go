@@ -44,12 +44,12 @@ func parseInput(input string) []string {
 			continue
 		}
 
-		if char == '\'' && !inDoubleQuotes == false {
+		if char == '\'' && !inDoubleQuotes {
 			inSingleQuotes = !inSingleQuotes
 			continue
 		}
 
-		if char == '"' && !inSingleQuotes == false {
+		if char == '"' && !inSingleQuotes {
 			inDoubleQuotes = !inDoubleQuotes
 			continue
 		}
