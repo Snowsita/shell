@@ -108,13 +108,18 @@ func main() {
 		}
 
 		command := parts[0]
-		args := parts[1:]
+		info := parseRediretions(parts[1:])
 
 		switch command {
 		case "exit":
 			os.Exit(0)
 		case "echo":
-			fmt.Println(strings.Join(parts[1:], " "))
+			writer, _ := GetOutputWriter(info.StdoutFile, false, os.Stdout)
+			if info.AppendFile != "" {
+				writer, _ = GetOutputWriter(info.AppendFile, true, os.Stdout)
+			}
+
+			fmt.Fprintln(writer, strings.Join(info.FinalArgs, " "))
 		case "type":
 			if len(parts) > 1 {
 				target := parts[1]
@@ -157,17 +162,34 @@ func main() {
 			fullPath := getExecutablePath(command)
 
 			if fullPath != "" {
-				cmd := exec.Command(fullPath, args...)
+				cmd := exec.Command(fullPath, info.FinalArgs...)
 
 				cmd.Args[0] = command
 
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 
+				outWriter, _ := GetOutputWriter(info.StdoutFile, false, os.Stdout)
+				if info.AppendFile != "" {
+					outWriter, _ = GetOutputWriter(info.AppendFile, true, os.Stdout)
+				}
+				cmd.Stdout = outWriter
+
+				errWriter, _ := GetOutputWriter(info.StderrFile, false, os.Stderr)
+				cmd.Stderr = errWriter
+
 				err := cmd.Run()
 				if err != nil {
 					fmt.Printf("%s: error executing command\n", command)
 				}
+
+				if f, ok := cmd.Stdout.(*os.File); ok && f != os.Stdout {
+					f.Close()
+				}
+				if f, ok := cmd.Stderr.(*os.File); ok && f != os.Stderr {
+					f.Close()
+				}
+
 			} else {
 				fmt.Printf("%s: command not found\n", command)
 			}
