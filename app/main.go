@@ -119,6 +119,13 @@ func main() {
 				writer, _ = GetOutputWriter(info.AppendFile, true, os.Stdout)
 			}
 
+			if info.StderrFile != "" {
+				errFile, err := GetOutputWriter(info.StderrFile, false, os.Stderr)
+				if err == nil && errFile != os.Stderr {
+					errFile.Close()
+				}
+			}
+
 			fmt.Fprintln(writer, strings.Join(info.FinalArgs, " "))
 		case "type":
 			if len(parts) > 1 {
