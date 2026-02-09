@@ -178,10 +178,7 @@ func main() {
 				errWriter, _ := GetOutputWriter(info.StderrFile, false, os.Stderr)
 				cmd.Stderr = errWriter
 
-				err := cmd.Run()
-				if err != nil {
-					fmt.Printf("%s: error executing command\n", command)
-				}
+				cmd.Run()
 
 				if f, ok := cmd.Stdout.(*os.File); ok && f != os.Stdout {
 					f.Close()
