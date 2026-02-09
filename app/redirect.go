@@ -6,6 +6,7 @@ type RedirectInfo struct {
 	StdoutFile string
 	StderrFile string
 	AppendFile string
+	AppendErrFile string
 	FinalArgs  []string
 }
 
@@ -26,6 +27,11 @@ func parseRediretions(args []string) RedirectInfo {
 		case ">>", "1>>":
 			if i+1 < len(args) {
 				res.AppendFile = args[i+1]
+				i++
+			}
+		case "2>>":
+			if i+1 < len(args) {
+				res.AppendErrFile = args[i+1]
 				i++
 			}
 		default:

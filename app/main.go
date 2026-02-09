@@ -114,19 +114,19 @@ func main() {
 		case "exit":
 			os.Exit(0)
 		case "echo":
-			writer, _ := GetOutputWriter(info.StdoutFile, false, os.Stdout)
+			outW, _ := GetOutputWriter(info.StdoutFile, false, os.Stdout)
 			if info.AppendFile != "" {
-				writer, _ = GetOutputWriter(info.AppendFile, true, os.Stdout)
+				outW, _ = GetOutputWriter(info.AppendFile, true, os.Stdout)
 			}
 
 			if info.StderrFile != "" {
-				errFile, err := GetOutputWriter(info.StderrFile, false, os.Stderr)
-				if err == nil && errFile != os.Stderr {
-					errFile.Close()
+				errW, err := GetOutputWriter(info.StderrFile, false, os.Stderr)
+				if err == nil && errW != os.Stderr {
+					errW.Close()
 				}
 			}
 
-			fmt.Fprintln(writer, strings.Join(info.FinalArgs, " "))
+			fmt.Fprintln(outW, strings.Join(info.FinalArgs, " "))
 		case "type":
 			if len(parts) > 1 {
 				target := parts[1]
@@ -144,11 +144,18 @@ func main() {
 				}
 			}
 		case "pwd":
+			outW, _ := GetOutputWriter(info.StdoutFile, false, os.Stdout)
+			if info.AppendFile != "" {
+				outW, _ = GetOutputWriter(info.AppendFile, true, os.Stdout)
+			}
+
 			dir, err := os.Getwd()
 			if err == nil {
-				fmt.Println(dir)
-			} else {
-				fmt.Printf("%s: not found", err)
+				fmt.Fprintln(outW, dir)
+			}
+
+			if outW != os.Stdout {
+				outW.Close()
 			}
 		case "cd":
 			if len(parts) < 2 {
@@ -183,6 +190,9 @@ func main() {
 				cmd.Stdout = outWriter
 
 				errWriter, _ := GetOutputWriter(info.StderrFile, false, os.Stderr)
+				if info.AppendErrFile != "" {
+					errWriter, _ = GetOutputWriter(info.AppendErrFile, true, os.Stderr)
+				}
 				cmd.Stderr = errWriter
 
 				cmd.Run()
