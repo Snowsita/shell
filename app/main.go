@@ -20,7 +20,6 @@ func main() {
 		Prompt:          "$ ",
 		AutoComplete:    completer,
 		InterruptPrompt: "^C",
-		EOFPrompt:       "exit",
 	})
 	if err != nil {
 		panic(err)
