@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"github.com/chzyer/readline"
 	"github.com/codecrafters-io/shell-starter-go/app/shell"
 	"os"
 	"os/exec"
@@ -13,15 +13,27 @@ import (
 var _ = fmt.Print
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
+	completer := &shell.BuiltinCompleter{
+		Builtins: []string{"exit", "echo", "type", "pwd", "cd"},
+	}
+
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:          "$ ",
+		AutoComplete:    completer,
+		InterruptPrompt: "^C",
+		EOFPrompt:       "exit",
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer rl.Close()
 
 	for {
-		fmt.Print("$ ")
-
-		input, err := reader.ReadString('\n')
+		input, err := rl.Readline()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error reading input:", err)
-			os.Exit(1)
+			if err == readline.ErrInterrupt {
+				continue
+			}
 		}
 
 		input = strings.TrimSpace(input)
@@ -72,14 +84,6 @@ func main() {
 				cmd.Stderr = errWriter
 
 				cmd.Run()
-
-				if f, ok := cmd.Stdout.(*os.File); ok && f != os.Stdout {
-					f.Close()
-				}
-				if f, ok := cmd.Stderr.(*os.File); ok && f != os.Stderr {
-					f.Close()
-				}
-
 			} else {
 				fmt.Printf("%s: command not found\n", command)
 			}
