@@ -1,16 +1,16 @@
-package main
+package shell
 
 import "os"
 
 type RedirectInfo struct {
-	StdoutFile string
-	StderrFile string
-	AppendFile string
+	StdoutFile    string
+	StderrFile    string
+	AppendFile    string
 	AppendErrFile string
-	FinalArgs  []string
+	FinalArgs     []string
 }
 
-func parseRediretions(args []string) RedirectInfo {
+func ParseRedirections(args []string) RedirectInfo {
 	res := RedirectInfo{}
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
@@ -54,4 +54,18 @@ func GetOutputWriter(fileName string, isAppend bool, defaultWriter *os.File) (*o
 	}
 
 	return os.OpenFile(fileName, flags, 0644)
+}
+
+func (info RedirectInfo) GetStdout(defaultW *os.File) (*os.File, error) {
+    if info.AppendFile != "" {
+        return GetOutputWriter(info.AppendFile, true, defaultW)
+    }
+    return GetOutputWriter(info.StdoutFile, false, defaultW)
+}
+
+func (info RedirectInfo) GetStderr(defaultW *os.File) (*os.File, error) {
+    if info.AppendErrFile != "" {
+        return GetOutputWriter(info.AppendErrFile, true, defaultW)
+    }
+    return GetOutputWriter(info.StderrFile, false, defaultW)
 }
