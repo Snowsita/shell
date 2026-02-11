@@ -31,7 +31,7 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 	sort.Strings(matches)
 
 	var finalMatches [][]rune
-	for _, match := range externalMatches {
+	for _, match := range matches {
 		completion := match[len(input):] + " "
 		finalMatches = append(finalMatches, []rune(completion))
 	}
