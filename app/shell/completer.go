@@ -3,6 +3,7 @@ package shell
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -11,7 +12,7 @@ type BuiltinCompleter struct {
 }
 
 func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length int) {
-	var matches [][]rune
+	var matches []string
 	input := string(line[:pos])
 
 	if strings.Contains(input, " ") {
@@ -20,15 +21,19 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	for _, b := range c.Builtins {
 		if strings.HasPrefix(b, input) {
-			completion := b[len(input):] + " "
-			matches = append(matches, []rune(completion))
+			matches = append(matches, b)
 		}
 	}
 
 	externalMatches := FindPathMatches(input)
-	for _, name := range externalMatches {
-		completion := name[len(input):] + " "
-		matches = append(matches, []rune(completion))
+	matches = append(matches, externalMatches...)
+
+	sort.Strings(matches)
+
+	var finalMatches [][]rune
+	for _, match := range externalMatches {
+		completion := match[len(input):] + " "
+		finalMatches = append(finalMatches, []rune(completion))
 	}
 
 	if len(matches) == 0 {
@@ -38,10 +43,10 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	if len(matches) > 1 {
 		fmt.Print("\x07")
-		return matches, len(input)
+		return finalMatches, len(input)
 	}
 
-	return matches, len(input)
+	return finalMatches, len(input)
 }
 
 func FindPathMatches(prefix string) []string {
