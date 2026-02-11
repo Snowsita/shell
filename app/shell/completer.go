@@ -9,42 +9,70 @@ import (
 
 type BuiltinCompleter struct {
 	Builtins []string
+	LastInput string
+	TabCount int
 }
 
-func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length int) {
-	var matches [][]rune
+func (c *BuiltinCompleter) Do(line []rune, pos int) ([][]rune, int) {
 	input := string(line[:pos])
 
 	if strings.Contains(input, " ") {
+		c.TabCount = 0
 		return nil, 0
 	}
 
+	var matches []string
+
 	for _, b := range c.Builtins {
 		if strings.HasPrefix(b, input) {
-			completion := b[len(input):] + " "
-			matches = append(matches, []rune(completion))
+			matches = append(matches, b)
 		}
 	}
 
 	externalMatches := FindPathMatches(input)
-	sort.Strings(externalMatches)
-	for _, name := range externalMatches {
-		completion := name + " "
-		matches = append(matches, []rune(completion))
-	}
+	matches = append(matches, externalMatches...)
+
+	sort.Strings(matches)
 
 	if len(matches) == 0 {
+		c.TabCount = 0
+		return nil, 0
+	}
+
+	// Reset tab counter if input changed
+	if input != c.LastInput {
+		c.TabCount = 0
+	}
+	c.LastInput = input
+	c.TabCount++
+
+	// First TAB
+	if c.TabCount == 1 && len(matches) > 1 {
 		fmt.Print("\x07")
 		return nil, 0
 	}
 
-	if len(matches) > 1 {
-		fmt.Print("\x07")
-		return matches, 0
+	// Second TAB
+	if c.TabCount >= 2 && len(matches) > 1 {
+		fmt.Print("\n")
+		fmt.Print(strings.Join(matches, "  "))
+		fmt.Print("\n$ ")
+		fmt.Print(input)
+
+		c.TabCount = 0
+		return nil, 0
 	}
 
-	return matches, len(input)
+	// Single match
+	if len(matches) == 1 {
+		suffix := matches[0][len(input):] + " "
+		c.TabCount = 0
+		return [][]rune{[]rune(suffix)}, len(input)
+	}
+
+	return nil, 0
 }
+
 
 func FindPathMatches(prefix string) []string {
 	var matches []string
