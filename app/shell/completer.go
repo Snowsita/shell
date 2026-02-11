@@ -30,12 +30,6 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	sort.Strings(matches)
 
-	var finalMatches [][]rune
-	for _, match := range matches {
-		completion := match[len(input):] + " "
-		finalMatches = append(finalMatches, []rune(completion))
-	}
-
 	if len(matches) == 0 {
 		fmt.Print("\x07")
 		return nil, 0
@@ -43,7 +37,17 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	if len(matches) > 1 {
 		fmt.Print("\x07")
-		return finalMatches, len(input)
+	}
+
+	var finalMatches [][]rune
+	for _, match := range matches {
+		var completion string
+		if len(matches) == 1 {
+			completion = match[len(input):] + " "
+		} else {
+			completion = match[len(input):]
+		}
+		finalMatches = append(finalMatches, []rune(completion))
 	}
 
 	return finalMatches, len(input)
@@ -77,14 +81,14 @@ func FindPathMatches(prefix string) []string {
 }
 
 func isExecutable(entry os.DirEntry) bool {
-    if entry.IsDir() {
-        return false
-    }
-    
-    info, err := entry.Info()
-    if err != nil {
-        return false
-    }
-    
-    return info.Mode().Perm()&0111 != 0
+	if entry.IsDir() {
+		return false
+	}
+
+	info, err := entry.Info()
+	if err != nil {
+		return false
+	}
+
+	return info.Mode().Perm()&0111 != 0
 }
