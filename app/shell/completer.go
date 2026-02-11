@@ -40,7 +40,8 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	if len(allMatches) == 1 {
 		c.TabCount = 0
-		completion := allMatches[0] + " "
+		match := allMatches[0]
+		completion := match[len(input):] + " "
 		return [][]rune{[]rune(completion)}, 0
 	}
 
