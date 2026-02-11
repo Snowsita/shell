@@ -40,7 +40,7 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	if len(matches) > 1 {
 		fmt.Print("\x07")
-		return matches, len(input)
+		return matches, 0
 	}
 
 	return matches, len(input)
