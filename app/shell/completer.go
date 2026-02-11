@@ -39,11 +39,18 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 	}
 
 	if len(allMatches) == 1 {
-		c.TabCount = 0
-		match := allMatches[0]
-		completion := match[len(input):] + " "
-		return [][]rune{[]rune(completion)}, 0
-	}
+        c.TabCount = 0
+        match := allMatches[0]
+        
+        // STRATEGY CHANGE: Full Word Replacement
+        // Instead of calculating the suffix, we give the FULL command + space.
+        completion := match + " " 
+        
+        // We return 'len(input)' as the length.
+        // This tells readline: "Delete the 3 chars 'ech' I typed, 
+        // and replace them with 'echo '."
+        return [][]rune{[]rune(completion)}, len(input)
+    }
 
 	if len(allMatches) > 1 {
 		c.TabCount++
