@@ -14,7 +14,6 @@ type BuiltinCompleter struct {
 
 func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length int) {
     var allMatches []string
-    // GLOBAL DEDUPLICATION MAP (Crucial for echo vs /bin/echo)
     seen := make(map[string]bool) 
     input := string(line[:pos])
 
@@ -23,15 +22,13 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
         return nil, 0
     }
 
-    // 1. Gather Matches (with deduplication)
-    // Add Builtins
     for _, b := range c.Builtins {
         if strings.HasPrefix(b, input) {
             allMatches = append(allMatches, b)
             seen[b] = true
         }
     }
-    // Add External
+
     externalMatches := FindPathMatches(input)
     for _, ext := range externalMatches {
         if !seen[ext] {
@@ -40,34 +37,23 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
         }
     }
 
-    // 2. Sort
     sort.Strings(allMatches)
 
-    // 3. Handle No Matches
     if len(allMatches) == 0 {
         fmt.Print("\x07")
         c.TabCount = 0
         return nil, 0
     }
 
-    // 4. Handle Single Match (The "Append Only" Fix)
     if len(allMatches) == 1 {
         c.TabCount = 0
         match := allMatches[0]
         
-        // STRATEGY: Calculate the Suffix
-        // Input: "custom"
-        // Match: "custom_exe_2756"
-        // Suffix: "_exe_2756 "
         suffix := match[len(input):] + " " 
         
-        // Return the SUFFIX with length 0.
-        // Length 0 tells readline: "Do not backspace. Just print these characters."
-        // This is safer than replacing the whole word.
-        return [][]rune{[]rune(suffix)}, 0 // <--- LENGTH MUST BE 0
+        return [][]rune{[]rune(suffix)}, 0
     }
 
-    // 5. Handle Multiple Matches (The Grid Fix)
     if len(allMatches) > 1 {
         c.TabCount++
 
@@ -76,7 +62,6 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
             return nil, 0
         }
 
-        // Manual Print with Double Spaces
         formattedList := strings.Join(allMatches, "  ")
         fmt.Printf("\n%s\n$ %s", formattedList, input)
         
