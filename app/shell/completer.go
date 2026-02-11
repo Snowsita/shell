@@ -27,7 +27,7 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	externalMatches := FindPathMatches(input)
 	for _, name := range externalMatches {
-		completion := name[len(input):] + "  "
+		completion := name[len(input):] + " "
 		matches = append(matches, []rune(completion))
 	}
 
