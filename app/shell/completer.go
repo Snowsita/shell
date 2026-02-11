@@ -9,50 +9,56 @@ import (
 
 type BuiltinCompleter struct {
 	Builtins []string
-	TabCount int
 }
 
 func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length int) {
-	var matches []string
-	input := string(line[:pos])
+    var matches [][]rune
+    // Use a string slice for sorting because sorting [][]rune is a nightmare
+    var found []string 
+    input := string(line[:pos])
 
-	if strings.Contains(input, " ") {
-		return nil, 0
-	}
+    if strings.Contains(input, " ") {
+        return nil, 0
+    }
 
-	for _, b := range c.Builtins {
-		if strings.HasPrefix(b, input) {
-			matches = append(matches, b)
-		}
-	}
+    // 1. Collect all strings
+    for _, b := range c.Builtins {
+        if strings.HasPrefix(b, input) {
+            found = append(found, b)
+        }
+    }
+    externalMatches := FindPathMatches(input)
+    found = append(found, externalMatches...)
 
-	externalMatches := FindPathMatches(input)
-	matches = append(matches, externalMatches...)
-	sort.Strings(matches)
+    // 2. SORTING IS MANDATORY (The tester failed you for this earlier)
+    sort.Strings(found)
 
-	if len(matches) == 0 {
-		fmt.Print("\x07")
-		c.TabCount = 0
-		return nil, 0
-	}
+    if len(found) == 0 {
+        fmt.Print("\x07")
+        return nil, 0
+    }
 
-	if len(matches) == 1 {
-		c.TabCount = 0
-		match := matches[0]
+    // 3. Convert to [][]rune based on count
+    for _, name := range found {
+        var completion string
+        if len(found) == 1 {
+            // Stage #GM9: Single match MUST have the space
+            completion = name[len(input):] + " "
+        } else {
+            // Stage #WH6: Multiple matches MUST NOT have the space
+            // This is what tells readline to use its 'grid' formatter (the 3 spaces)
+            completion = name[len(input):]
+        }
+        matches = append(matches, []rune(completion))
+    }
 
-		completion := match[len(input):] + " "
-		return [][]rune{[]rune(completion)}, len(input)
-	}
+    if len(matches) > 1 {
+        fmt.Print("\x07")
+        // No TabCount here as requested, just the bell and the matches
+        return matches, len(input)
+    }
 
-	c.TabCount++
-	if c.TabCount == 1 {
-		fmt.Print("\a")
-		return nil, 0
-	}
-
-	fmt.Printf("\n%s\n$ %s", strings.Join(matches, "  "), input)
-	c.TabCount = 0
-	return nil, 0
+    return matches, len(input)
 }
 
 func FindPathMatches(prefix string) []string {
@@ -83,14 +89,14 @@ func FindPathMatches(prefix string) []string {
 }
 
 func isExecutable(entry os.DirEntry) bool {
-	if entry.IsDir() {
-		return false
-	}
-
-	info, err := entry.Info()
-	if err != nil {
-		return false
-	}
-
-	return info.Mode().Perm()&0111 != 0
+    if entry.IsDir() {
+        return false
+    }
+    
+    info, err := entry.Info()
+    if err != nil {
+        return false
+    }
+    
+    return info.Mode().Perm()&0111 != 0
 }
