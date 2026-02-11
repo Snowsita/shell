@@ -36,6 +36,11 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 		return nil, 0
 	}
 
+	if len(matches) > 1 {
+		fmt.Print("\x07")
+		return matches, len(input)
+	}
+
 	return matches, len(input)
 }
 
