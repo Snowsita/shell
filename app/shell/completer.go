@@ -52,7 +52,7 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 			return nil, 0
 		}
 
-		fmt.Printf("\n%s\n$ %s", strings.Join(allMatches, " "), input)
+		fmt.Printf("\n%s\n$ %s", strings.Join(allMatches, "  "), input)
 		c.TabCount = 0
 
 		return nil, 0
