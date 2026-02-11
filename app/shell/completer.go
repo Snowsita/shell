@@ -3,6 +3,7 @@ package shell
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -26,6 +27,7 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 	}
 
 	externalMatches := FindPathMatches(input)
+	sort.Strings(externalMatches)
 	for _, name := range externalMatches {
 		completion := name[len(input):] + " "
 		matches = append(matches, []rune(completion))
