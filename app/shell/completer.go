@@ -41,7 +41,7 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
         // This is the magic part:
         // We print a newline, the matches joined by THREE spaces, 
         // a newline, and then we RESTORE the prompt line.
-        fmt.Printf("\n%s\n$ %s", strings.Join(found, "   "), input)
+        fmt.Printf("\n%s\n$ %s", strings.Join(found, "  "), input)
         
         // Return nil so the library doesn't try to print its own 1-space version
         return nil, 0
