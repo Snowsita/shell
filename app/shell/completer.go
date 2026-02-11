@@ -39,20 +39,17 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		return nil, 0
 	}
 
-	// Reset tab counter if input changed
 	if input != c.LastInput {
 		c.TabCount = 0
 	}
 	c.LastInput = input
 	c.TabCount++
 
-	// First TAB
 	if c.TabCount == 1 && len(matches) > 1 {
 		fmt.Print("\x07")
 		return nil, 0
 	}
 
-	// Second TAB
 	if c.TabCount >= 2 && len(matches) > 1 {
 		fmt.Print("\n")
 		fmt.Print(strings.Join(matches, "  "))
@@ -63,7 +60,6 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		return nil, 0
 	}
 
-	// Single match
 	if len(matches) == 1 {
 		suffix := matches[0][len(input):] + " "
 		c.TabCount = 0
