@@ -36,24 +36,23 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 		return nil, 0
 	}
 
-	if len(matches) > 1 {
-		c.TabCount++
-		if c.TabCount == 1 {
-			fmt.Print("\x07")
-			return nil, 0
-		}
-
-		fmt.Printf("\n%s\n$ %s", strings.Join(matches, "  "), input)
-
+	if len(matches) == 1 {
 		c.TabCount = 0
+		match := matches[0]
+
+		completion := match[len(input):] + " "
+		return [][]rune{[]rune(completion)}, len(input)
+	}
+
+	c.TabCount++
+	if c.TabCount == 1 {
+		fmt.Print("\a")
 		return nil, 0
 	}
 
+	fmt.Printf("\n%s\n$ %s", strings.Join(matches, "  "), input)
 	c.TabCount = 0
-	match := matches[0]
-	completion := match[len(input):] + " "
-
-	return [][]rune{[]rune(completion)}, len(input)
+	return nil, 0
 }
 
 func FindPathMatches(prefix string) []string {
