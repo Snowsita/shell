@@ -9,6 +9,7 @@ import (
 
 type BuiltinCompleter struct {
 	Builtins []string
+	TabCount int
 }
 
 func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length int) {
@@ -27,30 +28,32 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 	externalMatches := FindPathMatches(input)
 	matches = append(matches, externalMatches...)
-
 	sort.Strings(matches)
 
 	if len(matches) == 0 {
 		fmt.Print("\x07")
+		c.TabCount = 0
 		return nil, 0
 	}
 
 	if len(matches) > 1 {
-		fmt.Print("\x07")
-	}
-
-	var finalMatches [][]rune
-	for _, match := range matches {
-		var completion string
-		if len(matches) == 1 {
-			completion = match[len(input):] + " "
-		} else {
-			completion = match[len(input):]
+		c.TabCount++
+		if c.TabCount == 1 {
+			fmt.Print("\x07")
+			return nil, 0
 		}
-		finalMatches = append(finalMatches, []rune(completion))
+
+		fmt.Printf("\n%s\n$ %s", strings.Join(matches, "  "), input)
+
+		c.TabCount = 0
+		return nil, 0
 	}
 
-	return finalMatches, len(input)
+	c.TabCount = 0
+	match := matches[0]
+	completion := match[len(input):] + " "
+
+	return [][]rune{[]rune(completion)}, len(input)
 }
 
 func FindPathMatches(prefix string) []string {
