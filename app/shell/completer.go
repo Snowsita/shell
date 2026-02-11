@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -21,6 +22,11 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 			completion := b[len(input):] + " "
 			matches = append(matches, []rune(completion))
 		}
+	}
+
+	if len(matches) == 0 {
+		fmt.Print("\x07")
+		return nil, 0
 	}
 
 	return matches, len(input)
