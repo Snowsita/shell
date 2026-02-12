@@ -42,6 +42,52 @@ func main() {
 			continue
 		}
 
+		pipeIndex := -1
+		for i, p := range parts {
+			if p == "|" {
+				pipeIndex = i
+				break
+			}
+		}
+
+		if pipeIndex != -1 {
+			lhs := parts[:pipeIndex]
+			rhs := parts[pipeIndex+1:]
+
+			r, w, err := os.Pipe()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error creating pipe:", err)
+				continue
+			}
+
+			cmd1 := exec.Command(lhs[0], lhs[1:]...)
+			cmd1.Stdout = w
+			cmd1.Stderr = os.Stderr
+
+			cmd2 := exec.Command(rhs[0], rhs[1:]...)
+			cmd2.Stdin = r
+			cmd2.Stdout = os.Stdout
+			cmd2.Stderr = os.Stderr
+
+			if err := cmd1.Start(); err != nil {
+				fmt.Fprintln(os.Stderr, "Error starting cmd1:", err)
+				continue
+			}
+
+			if err := cmd2.Start(); err != nil {
+				fmt.Fprintln(os.Stderr, "Error starting cmd2:", err)
+				continue
+			}
+
+			w.Close()
+			r.Close()
+
+			cmd1.Wait()
+			cmd2.Wait()
+
+			continue
+		}
+
 		command := parts[0]
 		info := shell.ParseRedirections(parts[1:])
 
