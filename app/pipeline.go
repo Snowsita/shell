@@ -68,7 +68,7 @@ func runPipeline(parts []string) {
 			}
 		}
 
-		if currentPipeWriter != nil {
+		if currentPipeWriter != nil && !isBuiltin(cmdName) {
 			currentPipeWriter.Close()
 		}
 
