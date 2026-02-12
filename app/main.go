@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"io"
 )
 
 var _ = fmt.Print
@@ -51,92 +52,10 @@ func main() {
 		}
 
 		if pipeIndex != -1 {
-			runPipeline(parts, pipeIndex)
+			runPipeline(parts)
 		} else {
 			runSingleCommand(parts)
 		}
-	}
-}
-
-func runPipeline(parts []string, pipeIndex int) {
-	lhs := parts[:pipeIndex]
-	rhs := parts[pipeIndex+1:]
-
-	if len(lhs) == 0 || len(rhs) == 0 {
-		fmt.Fprintln(os.Stderr, "Syntax error: pipe requires two commands")
-		return
-	}
-
-	lhsInfo := shell.ParseRedirections(lhs[1:])
-	rhsInfo := shell.ParseRedirections(rhs[1:])
-
-	lhsCmd := lhs[0]
-	rhsCmd := rhs[0]
-
-	r, w, err := os.Pipe()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error creating pipe:", err)
-		return
-	}
-
-	if isBuiltin(lhsCmd) {
-		go func() {
-			switch lhsCmd {
-			case "echo":
-				shell.HandleEcho(lhsInfo, w)
-			case "type":
-				shell.HandleType(lhsInfo, w, getExecutablePath)
-			case "pwd":
-				shell.HandlePwd(lhsInfo, w)
-			case "cd", "exit":
-			}
-
-			w.Close()
-		}()
-	} else {
-		cmd1 := exec.Command(lhs[0], lhs[1:]...)
-		cmd1.Stdout = w
-		cmd1.Stderr = os.Stderr
-
-		if err := cmd1.Start(); err != nil {
-			fmt.Fprintln(os.Stderr, "Error starting cmd1:", err)
-			w.Close()
-			return
-		}
-	}
-
-	if isBuiltin(rhsCmd) {
-		switch rhsCmd {
-		case "echo":
-			shell.HandleEcho(rhsInfo, os.Stdout)
-		case "type":
-			shell.HandleType(rhsInfo, os.Stdout, getExecutablePath)
-		case "pwd":
-			shell.HandlePwd(rhsInfo, os.Stdout)
-		}
-
-		if !isBuiltin(lhsCmd) {
-			w.Close()
-		}
-		r.Close()
-
-	} else {
-		cmd2 := exec.Command(rhs[0], rhsInfo.FinalArgs...)
-		cmd2.Stdin = r
-		cmd2.Stdout = os.Stdout
-		cmd2.Stderr = os.Stderr
-
-		if !isBuiltin(lhsCmd) {
-			w.Close()
-		}
-
-		if err := cmd2.Start(); err != nil {
-			fmt.Fprintln(os.Stderr, "Error starting cmd2:", err)
-			return
-		}
-
-		cmd2.Wait()
-		r.Close()
 	}
 }
 
@@ -184,5 +103,24 @@ func runSingleCommand(parts []string) {
 		} else {
 			fmt.Printf("%s: command not found\n", command)
 		}
+	}
+}
+
+func runBuiltin(name string, info shell.RedirectInfo, out *os.File) {
+
+	var writer io.Writer = out
+    if writer == nil {
+        writer = os.Stdout
+    }
+
+	switch name {
+	case "echo":
+		shell.HandleEcho(info, out)
+	case "type":
+		shell.HandleType(info, out, getExecutablePath)
+	case "pwd":
+		shell.HandlePwd(info, out)
+	case "cd":
+	case "exit":
 	}
 }
