@@ -84,3 +84,11 @@ func getExecutablePath(command string) string {
 
 	return ""
 }
+
+func isBuiltin(cmd string) bool {
+	switch cmd {
+	case "echo", "type", "pwd", "exit", "cd":
+		return true
+	}
+	return false
+}

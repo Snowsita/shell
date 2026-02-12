@@ -54,36 +54,82 @@ func main() {
 			lhs := parts[:pipeIndex]
 			rhs := parts[pipeIndex+1:]
 
+			if len(lhs) == 0 || len(rhs) == 0 {
+				fmt.Fprintln(os.Stderr, "Syntax error: pipe requires two commands")
+				continue
+			}
+
+			lhsInfo := shell.ParseRedirections(lhs[1:])
+			rhsInfo := shell.ParseRedirections(rhs[1:])
+
+			lhsCmd := lhs[0]
+			rhsCmd := rhs[0]
+
 			r, w, err := os.Pipe()
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Error creating pipe:", err)
 				continue
 			}
 
-			cmd1 := exec.Command(lhs[0], lhs[1:]...)
-			cmd1.Stdout = w
-			cmd1.Stderr = os.Stderr
+			if isBuiltin(lhsCmd) {
+				go func() {
+					switch lhsCmd {
+					case "echo":
+						shell.HandleEcho(lhsInfo, w)
+					case "type":
+						shell.HandleType(lhsInfo, w, getExecutablePath)
+					case "pwd":
+						shell.HandlePwd(lhsInfo, w)
+					case "cd", "exit":
+					}
+					
+					w.Close()
+				}()
+			} else {
+				cmd1 := exec.Command(lhs[0], lhs[1:]...)
+				cmd1.Stdout = w
+				cmd1.Stderr = os.Stderr
 
-			cmd2 := exec.Command(rhs[0], rhs[1:]...)
-			cmd2.Stdin = r
-			cmd2.Stdout = os.Stdout
-			cmd2.Stderr = os.Stderr
-
-			if err := cmd1.Start(); err != nil {
-				fmt.Fprintln(os.Stderr, "Error starting cmd1:", err)
-				continue
+				if err := cmd1.Start(); err != nil {
+					fmt.Fprintln(os.Stderr, "Error starting cmd1:", err)
+					w.Close()
+					continue
+				}
 			}
 
-			if err := cmd2.Start(); err != nil {
-				fmt.Fprintln(os.Stderr, "Error starting cmd2:", err)
-				continue
+			if isBuiltin(rhsCmd) {
+				switch rhsCmd {
+				case "echo":
+					shell.HandleEcho(rhsInfo, os.Stdout)
+				case "type":
+					shell.HandleType(rhsInfo, os.Stdout, getExecutablePath)
+				case "pwd":
+					shell.HandlePwd(rhsInfo, os.Stdout)
+				}
+
+				if !isBuiltin(lhsCmd) {
+					w.Close()
+				}
+				r.Close()
+
+			} else {
+				cmd2 := exec.Command(rhs[0], rhsInfo.FinalArgs...)
+				cmd2.Stdin = r
+				cmd2.Stdout = os.Stdout
+				cmd2.Stderr = os.Stderr
+
+				if !isBuiltin(lhsCmd) {
+					w.Close()
+				}
+
+				if err := cmd2.Start(); err != nil {
+					fmt.Fprintln(os.Stderr, "Error starting cmd2:", err)
+					continue
+				}
+
+				cmd2.Wait()
+				r.Close()
 			}
-
-			w.Close()
-			r.Close()
-
-			cmd1.Wait()
-			cmd2.Wait()
 
 			continue
 		}
@@ -95,11 +141,11 @@ func main() {
 		case "exit":
 			os.Exit(0)
 		case "echo":
-			shell.HandleEcho(info)
+			shell.HandleEcho(info, os.Stdout)
 		case "type":
-			shell.HandleType(info, getExecutablePath)
+			shell.HandleType(info, os.Stdout, getExecutablePath)
 		case "pwd":
-			shell.HandlePwd(info)
+			shell.HandlePwd(info, os.Stdout)
 		case "cd":
 			if err := shell.HandleCd(info.FinalArgs); err != nil {
 				fmt.Fprintf(os.Stderr, "cd: %s: No such file or directory\n", info.FinalArgs[0])

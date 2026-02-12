@@ -2,18 +2,21 @@ package shell
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 )
 
-func HandleEcho(info RedirectInfo) error {
-	outW, err := info.GetStdout(os.Stdout)
+func HandleEcho(info RedirectInfo, defaultOut io.Writer) error {
+	outW, err := info.GetStdout(defaultOut)
 	if err != nil {
 		return err
 	}
 
-	if outW != os.Stdout {
-		defer outW.Close()
+	if outW != defaultOut {
+		if closer, ok := outW.(io.Closer); ok {
+			defer closer.Close()
+		}
 	}
 
 	errW, err := info.GetStderr(os.Stderr)
@@ -22,7 +25,9 @@ func HandleEcho(info RedirectInfo) error {
 	}
 
 	if errW != os.Stderr {
-		defer errW.Close()
+		if closer, ok := errW.(io.Closer); ok {
+			defer closer.Close()
+		}
 	}
 
 	_, err = fmt.Fprintln(outW, strings.Join(info.FinalArgs, " "))

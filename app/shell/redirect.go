@@ -1,6 +1,9 @@
 package shell
 
-import "os"
+import (
+	"os"
+	"io"
+)
 
 type RedirectInfo struct {
 	StdoutFile    string
@@ -41,9 +44,9 @@ func ParseRedirections(args []string) RedirectInfo {
 	return res
 }
 
-func GetOutputWriter(fileName string, isAppend bool, defaultWriter *os.File) (*os.File, error) {
+func GetOutputWriter(fileName string, isAppend bool, defaultOut io.Writer) (io.Writer, error) {
 	if fileName == "" {
-		return defaultWriter, nil
+		return defaultOut, nil
 	}
 
 	flags := os.O_WRONLY | os.O_CREATE
@@ -56,16 +59,16 @@ func GetOutputWriter(fileName string, isAppend bool, defaultWriter *os.File) (*o
 	return os.OpenFile(fileName, flags, 0644)
 }
 
-func (info RedirectInfo) GetStdout(defaultW *os.File) (*os.File, error) {
+func (info RedirectInfo) GetStdout(defaultOut io.Writer) (io.Writer, error) {
     if info.AppendFile != "" {
-        return GetOutputWriter(info.AppendFile, true, defaultW)
+        return GetOutputWriter(info.AppendFile, true, defaultOut)
     }
-    return GetOutputWriter(info.StdoutFile, false, defaultW)
+    return GetOutputWriter(info.StdoutFile, false, defaultOut)
 }
 
-func (info RedirectInfo) GetStderr(defaultW *os.File) (*os.File, error) {
+func (info RedirectInfo) GetStderr(defaultOut io.Writer) (io.Writer, error) {
     if info.AppendErrFile != "" {
-        return GetOutputWriter(info.AppendErrFile, true, defaultW)
+        return GetOutputWriter(info.AppendErrFile, true, defaultOut)
     }
-    return GetOutputWriter(info.StderrFile, false, defaultW)
+    return GetOutputWriter(info.StderrFile, false, defaultOut)
 }
