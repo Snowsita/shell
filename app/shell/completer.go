@@ -55,6 +55,13 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
     }
 
     if len(allMatches) > 1 {
+		lcp := longestCommonPrefix(allMatches)
+
+		if len(lcp) > len(input) {
+			c.TabCount = 0
+			return [][]rune{[]rune(lcp)}, len(input)
+		}
+
         c.TabCount++
 
         if c.TabCount == 1 {
@@ -64,7 +71,6 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
         formattedList := strings.Join(allMatches, "  ")
         fmt.Printf("\n%s\n$ %s", formattedList, input)
-        
         c.TabCount = 0
         return nil, 0
     }
@@ -110,4 +116,22 @@ func isExecutable(entry os.DirEntry) bool {
     }
     
     return info.Mode().Perm()&0111 != 0
+}
+
+func longestCommonPrefix(strs []string) string {
+	if len(strs) == 0 {
+		return ""
+	}
+
+	prefix := strs[0]
+
+	for _, s := range strs[1:] {
+		for !strings.HasPrefix(s, prefix) {
+			prefix = prefix[:len(prefix)-1]
+			if prefix == "" {
+				return ""
+			}
+		}
+	}
+	return prefix
 }
