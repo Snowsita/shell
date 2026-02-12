@@ -59,7 +59,8 @@ func (c *BuiltinCompleter) Do(line []rune, pos int) (newLine [][]rune, length in
 
 		if len(lcp) > len(input) {
 			c.TabCount = 0
-			return [][]rune{[]rune(lcp)}, len(input)
+			suffix := lcp[len(input):]
+			return [][]rune{[]rune(suffix)}, 0
 		}
 
         c.TabCount++
