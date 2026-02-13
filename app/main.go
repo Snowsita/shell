@@ -16,7 +16,7 @@ func main() {
 	var history []string
 
 	completer := &shell.BuiltinCompleter{
-		Builtins: []string{"exit", "echo", "type", "pwd", "cd"},
+		Builtins: []string{"exit", "echo", "type", "pwd", "cd", "history"},
 	}
 
 	rl, err := readline.NewEx(&readline.Config{
