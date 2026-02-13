@@ -58,14 +58,14 @@ func main() {
 		}
 
 		if pipeIndex != -1 {
-			runPipeline(parts, history)
+			runPipeline(parts, &history)
 		} else {
-			runSingleCommand(history, parts)
+			runSingleCommand(&history, parts)
 		}
 	}
 }
 
-func runSingleCommand(history []string, parts []string) {
+func runSingleCommand(history *[]string, parts []string) {
 	command := parts[0]
 	info := shell.ParseRedirections(parts[1:])
 
@@ -83,7 +83,7 @@ func runSingleCommand(history []string, parts []string) {
 			fmt.Fprintf(os.Stderr, "cd: %s: No such file or directory\n", info.FinalArgs[0])
 		}
 	case "history":
-		shell.HandleHistory(&history, info, os.Stdout)
+		shell.HandleHistory(history, info, os.Stdout)
 	default:
 		fullPath := getExecutablePath(command)
 
@@ -114,7 +114,7 @@ func runSingleCommand(history []string, parts []string) {
 	}
 }
 
-func runBuiltin(history []string, name string, info shell.RedirectInfo, out *os.File) {
+func runBuiltin(history *[]string, name string, info shell.RedirectInfo, out *os.File) {
 	switch name {
 	case "echo":
 		shell.HandleEcho(info, out)
@@ -124,7 +124,7 @@ func runBuiltin(history []string, name string, info shell.RedirectInfo, out *os.
 		shell.HandlePwd(info, out)
 	case "cd":
 	case "history":
-		shell.HandleHistory(&history, info, out)
+		shell.HandleHistory(history, info, out)
 	case "exit":
 	}
 }
