@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/chzyer/readline"
 	"github.com/codecrafters-io/shell-starter-go/app/shell"
-	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -84,7 +83,7 @@ func runSingleCommand(history []string, parts []string) {
 			fmt.Fprintf(os.Stderr, "cd: %s: No such file or directory\n", info.FinalArgs[0])
 		}
 	case "history":
-		shell.HandleHistory(history, info, os.Stdout)
+		shell.HandleHistory(&history, info, os.Stdout)
 	default:
 		fullPath := getExecutablePath(command)
 
@@ -116,12 +115,6 @@ func runSingleCommand(history []string, parts []string) {
 }
 
 func runBuiltin(history []string, name string, info shell.RedirectInfo, out *os.File) {
-
-	var writer io.Writer = out
-	if writer == nil {
-		writer = os.Stdout
-	}
-
 	switch name {
 	case "echo":
 		shell.HandleEcho(info, out)
@@ -131,7 +124,7 @@ func runBuiltin(history []string, name string, info shell.RedirectInfo, out *os.
 		shell.HandlePwd(info, out)
 	case "cd":
 	case "history":
-		shell.HandleHistory(history, info, out)
+		shell.HandleHistory(&history, info, out)
 	case "exit":
 	}
 }
