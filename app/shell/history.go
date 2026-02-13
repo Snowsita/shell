@@ -59,9 +59,11 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 }
 
 func fileHistory(history *[]string, filename string) error {
+	fmt.Printf("DEBUG: Opening file: %q\n", filename)
 
 	file, err := os.Open(filename)
 	if err != nil {
+		fmt.Printf("DEBUG: Open failed: %v\n", err)
 		return err
 	}
 	defer file.Close()
@@ -70,6 +72,7 @@ func fileHistory(history *[]string, filename string) error {
 	for scanner.Scan() {
 		line := scanner.Text()
 
+		fmt.Printf("DEBUG: Read line: %s\n", line)
 		*history = append(*history, line)
 	}
 
