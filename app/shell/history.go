@@ -3,6 +3,7 @@ package shell
 import (
 	"fmt"
 	"io"
+	"strconv"
 )
 
 func HandleHistory(history []string, info RedirectInfo, defaultOut io.Writer) error {
@@ -17,7 +18,21 @@ func HandleHistory(history []string, info RedirectInfo, defaultOut io.Writer) er
 		}
 	}
 
-	for i, cmd := range history {
+	args := info.FinalArgs
+	startIndex := 0
+
+	if len(args) > 0 {
+		n, err := strconv.Atoi(args[0])
+
+		if err == nil {
+			if n < len(history) {
+				startIndex = len(history) - n
+			}
+		}
+	}
+
+	for i := startIndex; i < len(history); i++ {
+		cmd := history[i]
 		_, err = fmt.Fprintf(outW, "%5d %s\n", i+1, cmd)
 
 		if err != nil {
