@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-func runPipeline(parts []string) {
+func runPipeline(parts []string, history []string) {
 
 	commands := parseCommands(parts)
 
@@ -45,13 +45,13 @@ func runPipeline(parts []string) {
 		if isBuiltin(cmdName) {
 			if !isLast {
 				go func(in *os.File, out *os.File, name string, args shell.RedirectInfo) {
-					runBuiltin(name, args, out)
+					runBuiltin(history, name, args, out)
 					if out != nil {
 						out.Close()
 					}
 				}(cmdStdin, cmdStdout, cmdName, info)
 			} else {
-				runBuiltin(cmdName, info, cmdStdout)
+				runBuiltin(history, cmdName, info, cmdStdout)
 			}
 		} else {
 			cmd := exec.Command(cmdName, info.FinalArgs...)
