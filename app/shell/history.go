@@ -64,7 +64,6 @@ func fileHistory(history *[]string, filename string) error {
 	if err != nil {
 		return err
 	}
-
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
@@ -73,6 +72,10 @@ func fileHistory(history *[]string, filename string) error {
 
 		*history = append(*history, line)
 	}
+
+	if err := scanner.Err(); err != nil {
+        return err
+    }
 
 	return nil
 }
