@@ -25,7 +25,7 @@ func HandleType(info RedirectInfo, defaultOut io.Writer, getExecutablePath func(
 }
 
 func isBuiltin(target string) bool {
-	builtins := []string{"exit", "echo", "type", "pwd", "cd"}
+	builtins := []string{"exit", "echo", "type", "pwd", "cd", "history"}
 	return slices.Contains(builtins, target)
 }
 
