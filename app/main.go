@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"github.com/chzyer/readline"
 	"github.com/codecrafters-io/shell-starter-go/app/shell"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
-	"io"
 )
 
 var _ = fmt.Print
 
 func main() {
+	var history []string
+
 	completer := &shell.BuiltinCompleter{
 		Builtins: []string{"exit", "echo", "type", "pwd", "cd"},
 	}
@@ -37,6 +39,11 @@ func main() {
 		}
 
 		input = strings.TrimSpace(input)
+
+		if input != "exit" {
+			history = append(history, input)
+		}
+		
 		parts := ParseInput(input)
 
 		if len(parts) == 0 {
@@ -52,14 +59,14 @@ func main() {
 		}
 
 		if pipeIndex != -1 {
-			runPipeline(parts)
+			runPipeline(parts, history)
 		} else {
-			runSingleCommand(parts)
+			runSingleCommand(history, parts)
 		}
 	}
 }
 
-func runSingleCommand(parts []string) {
+func runSingleCommand(history []string, parts []string) {
 	command := parts[0]
 	info := shell.ParseRedirections(parts[1:])
 
@@ -76,6 +83,8 @@ func runSingleCommand(parts []string) {
 		if err := shell.HandleCd(info.FinalArgs); err != nil {
 			fmt.Fprintf(os.Stderr, "cd: %s: No such file or directory\n", info.FinalArgs[0])
 		}
+	case "history":
+		shell.HandleHistory(history, info, os.Stdout)
 	default:
 		fullPath := getExecutablePath(command)
 
@@ -106,12 +115,12 @@ func runSingleCommand(parts []string) {
 	}
 }
 
-func runBuiltin(name string, info shell.RedirectInfo, out *os.File) {
+func runBuiltin(history []string, name string, info shell.RedirectInfo, out *os.File) {
 
 	var writer io.Writer = out
-    if writer == nil {
-        writer = os.Stdout
-    }
+	if writer == nil {
+		writer = os.Stdout
+	}
 
 	switch name {
 	case "echo":
@@ -121,6 +130,8 @@ func runBuiltin(name string, info shell.RedirectInfo, out *os.File) {
 	case "pwd":
 		shell.HandlePwd(info, out)
 	case "cd":
+	case "history":
+		shell.HandleHistory(history, info, out)
 	case "exit":
 	}
 }
