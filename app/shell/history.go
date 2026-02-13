@@ -65,6 +65,8 @@ func fileHistory(history *[]string, filename string) error {
 		return err
 	}
 
+	defer file.Close()
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
