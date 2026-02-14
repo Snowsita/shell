@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+var historyWrittenIndex = 0
+
 func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) error {
 	outW, err := info.GetStdout(defaultOut)
 	if err != nil {
@@ -28,29 +30,17 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
 			}
-			err := fileHistory(history, args[1])
-			if err != nil {
-				return err
-			}
-			return nil
+			return fileHistory(history, args[1])
 		case "-w":
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
 			}
-			err := writeHistory(history, args[1])
-			if err != nil {
-				return err
-			}
-			return nil
+			return writeHistory(history, args[1])
 		case "-a":
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
 			}
-			err := appendHistory(history, args[1])
-			if err != nil {
-				return err
-			}
-			return nil
+			return appendHistory(history, args[1])
 		}
 	}
 
@@ -115,22 +105,12 @@ func writeHistory(history *[]string, filename string) error {
 		}
 	}
 
+	historyWrittenIndex = len(*history)
+
 	return nil
 }
 
 func appendHistory(history *[]string, filename string) error {
-	fileRO, err := os.Open(filename)
-
-	existingLines := 0
-
-	if err == nil {
-		scanner := bufio.NewScanner(fileRO)
-		for scanner.Scan() {
-			existingLines++
-		}
-		fileRO.Close()
-	}
-
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
@@ -139,13 +119,14 @@ func appendHistory(history *[]string, filename string) error {
 
 	hist := *history
 
-	if existingLines < len(hist) {
-		for _, cmd := range hist[existingLines:] {
-			_, err := fmt.Fprintln(file, cmd)
-			if err != nil {
+	if historyWrittenIndex < len(hist) {
+		for _, cmd := range hist[historyWrittenIndex:] {
+			if _, err := fmt.Fprintln(file, cmd); err != nil {
 				return err
 			}
 		}
+        
+        historyWrittenIndex = len(hist)
 	}
 
 	return nil
