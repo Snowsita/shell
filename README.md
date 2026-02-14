@@ -1,34 +1,60 @@
-[![progress-banner](https://backend.codecrafters.io/progress/shell/9785568f-2a10-4dc7-b087-2420c76a584d)](https://app.codecrafters.io/users/codecrafters-bot?r=2qF)
+# GoShell
 
-This is a starting point for Go solutions to the
-["Build Your Own Shell" Challenge](https://app.codecrafters.io/courses/shell/overview).
+A lightweight, performant, and POSIX-compliant shell implementation written entirely in Go.
 
-In this challenge, you'll build your own POSIX compliant shell that's capable of
-interpreting shell commands, running external programs and builtin commands like
-cd, pwd, echo and more. Along the way, you'll learn about shell command parsing,
-REPLs, builtin commands, and more.
+This project was built from scratch as a deep dive into systems programming, process management, and the Go standard library. It features a custom REPL, command pipelining, I/O redirection, and persistent history management.
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+## Features
 
-# Passing the first stage
+### Core Capabilities
+* **REPL (Read-Eval-Print Loop):** fast and responsive interactive prompt using `readline`.
+* **External Command Execution:** Executes any binary found in your `$PATH`.
+* **Signal Handling:** Gracefully handles `Ctrl+C` (interrupt) and `Ctrl+D` (EOF/Exit).
 
-The entry point for your `shell` implementation is in `app/main.go`. Study and
-uncomment the relevant code, and push your changes to pass the first stage:
+### Advanced Shell Features
+* **Pipelining (`|`):** Chain commands together, passing the output of one as the input to the next.
+* **I/O Redirection:**
+    * Standard Output: `>` (overwrite), `>>` (append).
+    * Standard Error: `2>`, `2>>`.
+* **Quoting Support:** Handles single (`'`) and double (`"`) quotes, allowing for preserved whitespace and escaped characters.
 
-```sh
-git commit -am "pass 1st stage" # any msg
-git push origin master
+### Built-in Commands
+The shell includes several internal commands optimized for performance:
+* `cd`: Change directory (supports absolute and relative paths).
+* `pwd`: Print current working directory.
+* `echo`: Print arguments to standard output.
+* `type`: Reveal information about commands (builtin vs. external path).
+* `exit`: Gracefully terminate the shell session (saves history automatically).
+* `history`: View and manage command history.
+    * `history`: View session history.
+    * `history -w <file>`: Write current history to file.
+    * `history -r <file>`: Read history from file.
+    * `history -a <file>`: Append new session commands to file.
+
+### Persistence
+* **Automatic History Loading:** Loads command history from the file specified in the `HISTFILE` environment variable on startup.
+* **Graceful Shutdown:** Automatically appends new commands to `HISTFILE` upon exit.
+
+## Architecture
+
+The project follows a modular "Traffic Controller" architecture:
+
+* **`main.go`**: Acts as the entry point and router. It handles the input loop, parses the raw command string, detects pipes/redirections, and routes execution to either the builtin handler or the OS process spawner.
+* **`shell/` package**: Contains the core business logic.
+    * **`builtins.go`**: Implementation of internal commands.
+    * **`history.go`**: Stateless and session-aware history management.
+    * **`parser.go`**: specialized parsing logic for quotes and arguments.
+
+This structure ensures that the execution flow is decoupled from the specific implementation of commands, allowing for easy addition of new features.
+
+## Installation & Usage
+
+### Prerequisites
+* Go 1.22 or higher
+
+### Build
+```bash
+git clone https://github.com/Snowsita/shell.git
+cd shell
+go build ./app
 ```
-
-Time to move on to the next stage!
-
-# Stage 2 & beyond
-
-Note: This section is for stages 2 and beyond.
-
-1. Ensure you have `go (1.25)` installed locally
-1. Run `./your_program.sh` to run your program, which is implemented in
-   `app/main.go`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
