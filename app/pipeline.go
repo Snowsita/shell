@@ -7,7 +7,7 @@ import (
 	"os/exec"
 )
 
-func runPipeline(parts []string, history *[]string) {
+func runPipeline(history *[]string, parts []string) {
 
 	commands := parseCommands(parts)
 

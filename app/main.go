@@ -58,7 +58,7 @@ func main() {
 		}
 
 		if pipeIndex != -1 {
-			runPipeline(parts, &history)
+			runPipeline(&history, parts)
 		} else {
 			runSingleCommand(&history, parts)
 		}
