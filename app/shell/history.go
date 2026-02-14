@@ -24,7 +24,7 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 
 	if len(args) > 0 {
 		switch args[0] {
-case "-r":
+		case "-r":
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
 			}
@@ -42,6 +42,14 @@ case "-r":
 				return err
 			}
 			return nil
+		case "-a":
+			if len(args) < 2 {
+				return fmt.Errorf("history: argument required")
+			}
+			err := appendHistory(history, args[1])
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -103,6 +111,39 @@ func writeHistory(history *[]string, filename string) error {
 
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func appendHistory(history *[]string, filename string) error {
+	fileRO, err := os.Open(filename)
+
+	existingLines := 0
+
+	if err == nil {
+		scanner := bufio.NewScanner(fileRO)
+		for scanner.Scan() {
+			existingLines++
+		}
+		fileRO.Close()
+	}
+
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	hist := *history
+
+	if existingLines < len(hist) {
+		for _, cmd := range hist[existingLines:] {
+			_, err := fmt.Fprintln(file, cmd)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
