@@ -40,7 +40,7 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
 			}
-			return appendHistory(history, args[1])
+			return AppendHistory(history, args[1])
 		}
 	}
 
@@ -110,7 +110,7 @@ func writeHistory(history *[]string, filename string) error {
 	return nil
 }
 
-func appendHistory(history *[]string, filename string) error {
+func AppendHistory(history *[]string, filename string) error {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
