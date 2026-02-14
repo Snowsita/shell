@@ -23,11 +23,21 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 	args := info.FinalArgs
 
 	if len(args) > 0 {
-		if args[0] == "-r" {
+		switch args[0] {
+case "-r":
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
 			}
 			err := fileHistory(history, args[1])
+			if err != nil {
+				return err
+			}
+			return nil
+		case "-w":
+			if len(args) < 2 {
+				return fmt.Errorf("history: argument required")
+			}
+			err := writeHistory(history, args[1])
 			if err != nil {
 				return err
 			}
@@ -73,8 +83,28 @@ func fileHistory(history *[]string, filename string) error {
 	}
 
 	if err := scanner.Err(); err != nil {
-        return err
-    }
+		return err
+	}
+
+	return nil
+}
+
+func writeHistory(history *[]string, filename string) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	hist := *history
+
+	for _, cmd := range hist {
+		_, err := fmt.Fprintln(file, cmd)
+
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
