@@ -30,7 +30,7 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
 			}
-			return fileHistory(history, args[1])
+			return FileHistory(history, args[1])
 		case "-w":
 			if len(args) < 2 {
 				return fmt.Errorf("history: argument required")
@@ -67,7 +67,7 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 	return nil
 }
 
-func fileHistory(history *[]string, filename string) error {
+func FileHistory(history *[]string, filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return err

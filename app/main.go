@@ -26,6 +26,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	histFile := os.Getenv("HISTFILE")
+	if histFile != "" {
+		shell.FileHistory(&history, histFile)
+	}
+
 	defer rl.Close()
 
 	for {
