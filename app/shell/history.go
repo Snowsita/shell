@@ -50,6 +50,7 @@ func HandleHistory(history *[]string, info RedirectInfo, defaultOut io.Writer) e
 			if err != nil {
 				return err
 			}
+			return nil
 		}
 	}
 
