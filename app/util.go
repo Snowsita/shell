@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/codecrafters-io/shell-starter-go/app/shell"
+	"github.com/Snowsita/shell/app/shell"
 	"os"
 	"os/exec"
 )

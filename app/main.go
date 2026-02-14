@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/Snowsita/shell/app/shell"
 	"github.com/chzyer/readline"
-	"github.com/codecrafters-io/shell-starter-go/app/shell"
 	"os"
 	"strings"
 )
@@ -30,7 +30,6 @@ func main() {
 	if histFile != "" {
 		shell.FileHistory(&history, histFile)
 	}
-	
 
 	defer rl.Close()
 
