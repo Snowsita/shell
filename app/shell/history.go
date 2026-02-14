@@ -85,6 +85,8 @@ func FileHistory(history *[]string, filename string) error {
 		return err
 	}
 
+	historyWrittenIndex = len(*history)
+
 	return nil
 }
 

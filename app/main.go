@@ -30,6 +30,7 @@ func main() {
 	if histFile != "" {
 		shell.FileHistory(&history, histFile)
 	}
+	
 
 	defer rl.Close()
 
