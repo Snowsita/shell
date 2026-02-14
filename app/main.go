@@ -44,10 +44,8 @@ func main() {
 
 		input = strings.TrimSpace(input)
 
-		if input != "exit" {
-			history = append(history, input)
-		}
-		
+		history = append(history, input)
+
 		parts := ParseInput(input)
 
 		if len(parts) == 0 {
